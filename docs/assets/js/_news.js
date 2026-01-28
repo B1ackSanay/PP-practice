@@ -3,7 +3,14 @@ const pageComponents = {
     info: 'assets/html/_info.html',
     center: 'assets/html/_center.html',
     contacts: 'assets/html/_contacts.html',
-    newsDetail: '',
+};
+
+const pageTitles = {
+    news: 'Новости',
+    info: 'Информация о деятельности',
+    center: 'Центр добровольчества "Абилимпикс"',
+    contacts: 'Контакты',
+    newsDetail: 'Новости',
 };
 
 async function loadPage(pageId, newsId = null) {
@@ -12,132 +19,99 @@ async function loadPage(pageId, newsId = null) {
         return;
     }
 
-    if (!pageComponents[pageId]) return;
-
-    const pageTitles = {
-        'news': 'Новости',
-        'info': 'Информация о деятельности',
-        'center': 'Центр добровольчества "Абилимпикс"',
-        'contacts': 'Контакты',
-        'newsDetail': 'Новости',
-    };
+    const pagePath = pageComponents[pageId];
+    if (!pagePath) return;
 
     const pageElement = document.getElementById('page');
-    if (pageElement) {
-        pageElement.textContent = pageTitles[pageId];
-    }
+    const titleElement = document.getElementById('title');
 
-    const newsTitleElement = document.getElementById('title');
-    if (newsTitleElement) {
-        newsTitleElement.textContent = '';
-    }
+    if (pageElement) pageElement.textContent = pageTitles[pageId] || '';
+    if (titleElement) titleElement.textContent = '';
 
-    // fetch использование  SPA
     try {
-        const response = await fetch(pageComponents[pageId]);
-        const html = await response.text();
-        document.getElementById('replace-content').innerHTML = html;
-    } catch (error) {
-        console.error('Ошибка загрузки страницы:', error);
-        return;
-    }
-
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.page === pageId) {
-            btn.classList.add('active');
+        const response = await fetch(pagePath);
+        if (!response.ok) {
+            throw new Error(`Ошибка загрузки ${pagePath}`);
         }
-    });
 
-    if (pageId === 'news') {
-        setTimeout(() => {
+        const html = await response.text();
+        const container = document.getElementById('replace-content');
+        container.innerHTML = html;
+
+        updateNavigation(pageId);
+
+        if (pageId === 'news') {
             refreshPagination();
-        }, 50);
-    } else if (pageId === 'info') {
-        setTimeout(initVolunteerTexts, 50);
-    } else {
-        isInitialized = false;
+        }
+
+        if (pageId === 'info' && typeof initVolunteerTexts === 'function') {
+            initVolunteerTexts();
+        }
+
+    } catch (err) {
+        console.error(err);
     }
 }
 
-function loadNewsDetail(newsId) {
-    const id = parseInt(newsId);
-    const news = newsData.find(item => item.id === id);
+function updateNavigation(activePage) {
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.page === activePage);
+    });
+}
 
+function loadNewsDetail(newsId) {
+    if (!Array.isArray(newsData)) return;
+
+    const news = newsData.find(n => n.id === Number(newsId));
     if (!news) {
         loadPage('news');
         return;
     }
 
-    // page в header
-    const pageElement = document.getElementById('page');
-    if (pageElement) {
-        pageElement.textContent = `Новости\u00A0\u00A0>`;
-    }
-    // title в header
-    const newsTitleElement = document.getElementById('title');
-    if (newsTitleElement) {
-        newsTitleElement.textContent = `${news.title}`;
-    }
+    document.getElementById('page').textContent = 'Новости >';
+    document.getElementById('title').textContent = news.title;
 
-    // Загрузка шаблона
     fetch('assets/html/news-page.html')
-        .then(response => response.text())
+        .then(r => {
+            if (!r.ok) throw new Error('Ошибка шаблона новости');
+            return r.text();
+        })
         .then(html => {
-
             document.getElementById('replace-content').innerHTML = html;
 
-            // Данные
-            const titleElement = document.querySelector('.news-detail-title');
-            const infoElement = document.querySelector('.news-detail-information');
+            document.querySelector('.news-detail-title').textContent = news.title;
+            document.querySelector('.news-detail-information').textContent = news.information || '';
+            document.querySelector('.news-detail-date').textContent = news.date;
+
             const photosGrid = document.querySelector('.news-photos-grid');
-            const dateElement = document.querySelector('.news-detail-date');
+            photosGrid.innerHTML = '';
 
-            if (titleElement) titleElement.textContent = news.title;
-            if (infoElement) infoElement.textContent = news.information || '';
-            if (dateElement) dateElement.textContent = news.date;
-
-            // Фотографии
-            if (photosGrid && news.photos && news.photos.length > 0) {
-                photosGrid.innerHTML = '';
+            if (Array.isArray(news.photos)) {
                 news.photos.forEach(photo => {
-                    if (photo.img) {
-                        const photoItem = document.createElement('div');
-                        photoItem.className = 'news-photo-item';
-                        photoItem.innerHTML = `
-                                <img src="${photo.img}" alt="Фото новости ${photo.id || ''}" loading="lazy">
-                            `;
-                        photosGrid.appendChild(photoItem);
-                    }
+                    const div = document.createElement('div');
+                    div.className = 'news-photo-item';
+                    div.innerHTML = `<img src="${photo.img}" loading="lazy">`;
+                    photosGrid.appendChild(div);
                 });
             }
         })
-        .catch(error => {
-            console.error('Ошибка загрузки шаблона:', error);
-            loadPage('news');
-        });
+        .catch(() => loadPage('news'));
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    // Клики по новостям
-    document.addEventListener('click', function (e) {
-        const newsItem = e.target.closest('.news-item');
-        if (newsItem && newsItem.href) {
-            e.preventDefault();
-            const href = newsItem.getAttribute('href');
-            if (href && href.startsWith('news/')) {
-                const newsId = href.split('/')[1];
-                loadPage('newsDetail', newsId);
-            }
-            scrollToTop()
-        }
+document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('click', e => {
+        const link = e.target.closest('.news-item');
+        if (!link) return;
+
+        e.preventDefault();
+        const id = link.getAttribute('href')?.split('/')[1];
+        if (id) loadPage('newsDetail', id);
     });
 
-    // Кнопки навигации
     document.querySelectorAll('.nav-btn[data-page]').forEach(btn => {
-        btn.addEventListener('click', function (e) {
+        btn.addEventListener('click', e => {
             e.preventDefault();
-            loadPage(this.dataset.page);
+            loadPage(btn.dataset.page);
         });
     });
 
