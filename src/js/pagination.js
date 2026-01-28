@@ -76,7 +76,7 @@ function createNewsPages() {
 
             newsItem.innerHTML = `
                 <div class="news-content-wrapper ${isEven ? 'image-right' : 'image-left'}">
-                    ${news.image && news.image !== '/assets/images/' ?
+                    ${news.image && news.image !== 'assets/images/' ?
                     `<div class="news-image-container">
                             <img src="${news.image}" alt="${news.title}" loading="lazy">
                         </div>`:

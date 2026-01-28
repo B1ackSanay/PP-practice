@@ -1,7 +1,7 @@
 let infoData = [
     {
         title: "Социальное волонтерство",
-        image: "/assets/images/info/SocVol.webp",
+        image: "assets/images/info/SocVol.webp",
         
         works: [
             { text: "Помощь пожилым людям и инвалидам" },
@@ -12,7 +12,7 @@ let infoData = [
     },
     {
         title: "Волонтерство “Абилимпикс”",
-        image: "/assets/images/info/SocVol.webp",
+        image: "assets/images/info/SocVol.webp",
         
         works: [
             { text: "Взаимопомощь между волонтерами" },
@@ -24,7 +24,7 @@ let infoData = [
     },
     {
         title: "Спортивное волонтерство",
-        image: "/assets/images/info/SocVol.webp",
+        image: "assets/images/info/SocVol.webp",
 
         works: [
             { text: "Работа со спортсменами" },
@@ -34,7 +34,7 @@ let infoData = [
     },
     {
         title: "Событийное волонтерство",
-        image: "/assets/images/info/SocVol.webp",
+        image: "assets/images/info/SocVol.webp",
 
         works: [
             { text: "Волонтеры мероприятий" },
