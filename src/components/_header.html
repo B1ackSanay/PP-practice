@@ -1,0 +1,167 @@
+<div id="header">
+    <div class="header__nameOfPage">
+        <span id="header__base">Волонтерство&ensp;></span>
+        <span id="page">Новости</span>
+        <span id="title"></span>
+    </div>
+    <div class="header__navigation">
+        <button class="nav-btn active" data-page="news">Новости</button>
+        <button class="nav-btn" data-page="info">Информация о деятельности</button>
+        <button class="nav-btn" data-page="center">Центр добровольчества "Абилимпикс"</button>
+        <button class="nav-btn" data-page="contacts">Контакты</button>
+    </div>
+    <div class="header__statement">
+        <div class="statement__trigger">
+            Желаете стать волонтером?
+            <img src="/assets/images/vector-big-arrow.svg" class="statement__arrow" id="vector-big-arrow">
+        </div>
+        <div class="statement__hidden">
+            <div class="statement__href">
+                <a href="https://dobro.ru/register?__target_path=/dashboard" target="_blank" rel="noopener">
+                    Подать заявку на "добро.рф"
+                </a>
+            </div>
+
+            <form id="volunteerForm" class="form-container" action="#" method="get">
+                <div class="form-field">
+                    <input type="text" id="fullName" name="fullName" class="form-input" placeholder="ФИО*" required>
+                </div>
+
+                <div class="form-field">
+                    <input type="tel" id="phone" name="phone" class="form-input" placeholder="Телефон*" required>
+                </div>
+
+                <div class="form-field">
+                    <input type="email" id="email" name="email" class="form-input" placeholder="Email*" required>
+                </div>
+
+                <div class="custom-select">
+                    <select id="contactMethod" name="contactMethod" class="original-select" required>
+                        <option value="" disabled selected>Удобный способ связи:</option>
+                        <option value="phone">Позвонить по телефону</option>
+                        <option value="email">Написать на почту</option>
+                    </select>
+                    <div class="select-head">
+                        <span class="select-text">Удобный способ связи:</span>
+                        <img src="/assets/images/vector-arrow.svg" class="select-arrow">
+                    </div>
+                    <ul class="select-list">
+                        <li class="select-item" data-value="">Удобный способ связи:</li>
+                        <li class="select-item" data-value="phone"><img src="/assets/images/fi-rs-phone-call.svg">Позвонить по телефону</li>
+                        <li class="select-item" data-value="email"><img src="/assets/images/fi-rs-envelope.svg">Написать на почту</li>
+                    </ul>
+                </div>
+
+                <div class="form-checkbox">
+                    <input type="checkbox" id="agreement" name="agreement" class="checkbox-input" required>
+                    <label for="agreement" class="checkbox-label">
+                        <div class="checkbox-text">
+                            Я ознакомлен (-на) с <a href="1.txt" target="_blank" rel="noopener">политикой
+                                конфиденциальности</a> и даю согласие на <a href="2.txt" target="_blank"
+                                rel="noopener">обработку персональных данных</a>
+                        </div>
+                    </label>
+                </div>
+
+                <input type="submit" class="form-submit" value="Отправить заявку">
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const statement = document.querySelector('.header__statement');
+        const trigger = document.querySelector('.statement__trigger');
+
+        if (trigger && statement) {
+            trigger.addEventListener('click', function () {
+                statement.classList.toggle('expanded');
+            });
+        }
+
+        const form = document.getElementById('volunteerForm');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value || (field.type === 'checkbox' && !field.checked)) {
+                    isValid = false;
+                }
+            });
+
+            if (isValid) {
+                alert('Заявка успешно отправлена!');
+                form.reset();
+                statement.classList.remove('expanded');
+            } else {
+                alert('Пожалуйста, заполните все поля');
+            }
+        });
+    });
+
+    <!-- ===============================select================================== -->
+    const customSelects = document.querySelectorAll('.custom-select');
+
+    customSelects.forEach(select => {
+        const originalSelect = select.querySelector('.original-select');
+        const selectHead = select.querySelector('.select-head');
+        const selectText = select.querySelector('.select-text');
+        const selectList = select.querySelector('.select-list');
+        const selectItems = select.querySelectorAll('.select-item');
+        const selectedOption = originalSelect.querySelector('option:checked');
+
+        const placeholderText = "Удобный способ связи:";
+
+
+        if (selectedOption && selectedOption.value !== "") {
+            selectText.textContent = selectedOption.textContent;
+        }
+
+        selectHead.addEventListener('click', function (e) {
+            e.stopPropagation();
+
+            const isOpen = selectList.classList.contains('open');
+
+            if (isOpen) {
+                selectList.classList.remove('open');
+                selectHead.classList.remove('open');
+            } else {
+                selectList.classList.add('open');
+                selectHead.classList.add('open');
+            }
+        });
+
+        selectItems.forEach(item => {
+            item.addEventListener('click', function () {
+                const value = this.dataset.value;
+                const text = this.textContent;
+
+                if (value === "") {
+                    selectText.textContent = placeholderText;
+                    originalSelect.value = "";
+                } else {
+                    selectText.textContent = text;
+                    originalSelect.value = value;
+                }
+
+                selectList.classList.remove('open');
+                selectHead.classList.remove('open');
+
+                const event = new Event('change');
+                originalSelect.dispatchEvent(event);
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!select.contains(e.target)) {
+                selectList.classList.remove('open');
+                selectHead.classList.remove('open');
+            }
+        });
+    });
+</script>

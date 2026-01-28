@@ -1,0 +1,10 @@
+.contacts-card {
+    background-color: var(--volont-bac-color);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    .map-container {
+        background-color: var(--volont-bac-color);
+    }
+}
